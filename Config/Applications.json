@@ -1,0 +1,12 @@
+{
+  "_comment": "Template for Part 2 (Phase 3). WinGet IDs must be verified against the winget source before pilot use. Entries with Method 'CompanyInstaller' or 'IntuneManaged' need company-specific configuration.",
+  "Applications": [
+    { "Name": "Microsoft 365 Apps",   "Method": "IntuneManagedOrODT", "Required": true, "OdtConfigurationPath": "" },
+    { "Name": "Microsoft Teams",      "Method": "IntuneManagedOrApproved", "Required": true },
+    { "Name": "Adobe Acrobat Reader", "Method": "WinGet", "WinGetId": "Adobe.Acrobat.Reader.64-bit", "Source": "winget", "Required": true },
+    { "Name": "7-Zip",                "Method": "WinGet", "WinGetId": "7zip.7zip", "Source": "winget", "Required": true },
+    { "Name": "Google Earth Pro",     "Method": "WinGet", "WinGetId": "Google.EarthPro", "Source": "winget", "Required": true },
+    { "Name": "Sophos Endpoint Protection", "Method": "CompanyInstaller", "InstallerRelativePath": "Installers/Sophos/", "Required": true },
+    { "Name": "Microsoft OneDrive",   "Method": "VerifyOnly", "Required": true }
+  ]
+}

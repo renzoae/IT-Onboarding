@@ -1,0 +1,48 @@
+# --- Generated operational data: must never be committed ---
+Reports/**
+!Reports/
+!Reports/*/
+!Reports/**/.gitkeep
+Logs/**
+!Logs/.gitkeep
+
+# Hardware hashes / inventory exports wherever they end up
+Autopilot_*.csv
+*HardwareHash*.csv
+Inventory_*.csv
+
+# Company installers and licensed binaries (supplied per deployment, not in Git)
+Installers/**
+!Installers/
+!Installers/Sophos/
+!Installers/**/.gitkeep
+!Installers/**/README.md
+
+# Local overrides and secrets
+Config/*.local.json
+*.pfx
+*.pem
+*.key
+*.cer
+*.kdbx
+.env
+*.secret
+
+# Runtime state / temp
+*.tmp
+*.bak
+*.corrupt
+State/
+Work/
+
+# Test output
+TestResults/
+testResults*.xml
+coverage*.xml
+
+# Editor / OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

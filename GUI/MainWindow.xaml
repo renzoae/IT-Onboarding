@@ -1,0 +1,207 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="GRE IT Onboarding" Width="1180" Height="760" MinWidth="980" MinHeight="640"
+        WindowStartupLocation="CenterScreen" Background="#F3F6FA"
+        FontFamily="Segoe UI" FontSize="13">
+    <Window.Resources>
+        <SolidColorBrush x:Key="NavyBrush" Color="#0B2A4A"/>
+        <SolidColorBrush x:Key="NavyLightBrush" Color="#16406E"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#1E6FD9"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#5B6B7F"/>
+
+        <Style x:Key="NavButton" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#D9E4F2"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="GroupName" Value="Nav"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Margin="10,2" Padding="14,10">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#16406E"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1E6FD9"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="BorderBrush" Value="#DCE3EC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,14,14"/>
+        </Style>
+        <Style x:Key="CardLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#5B6B7F"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style x:Key="CardValue" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#0B2A4A"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+        <Style x:Key="PageTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#0B2A4A"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#0B2A4A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#0B2A4A"/>
+            <Setter Property="Padding" Value="16,7"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource NavyBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20,22,20,18">
+                    <TextBlock Text="GRE IT" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                    <TextBlock Text="Onboarding" Foreground="#9DB7D6" FontSize="16"/>
+                </StackPanel>
+                <TextBlock x:Name="SidebarFooter" DockPanel.Dock="Bottom" Margin="20,0,20,16" Foreground="#7F9BBD" FontSize="11" TextWrapping="Wrap"/>
+                <StackPanel>
+                    <RadioButton x:Name="NavDashboard" Style="{StaticResource NavButton}" Content="Dashboard" IsChecked="True"/>
+                    <RadioButton x:Name="NavPart1" Style="{StaticResource NavButton}" Content="Part 1 &#x2014; Pre-Intune"/>
+                    <RadioButton x:Name="NavPart2" Style="{StaticResource NavButton}" Content="Part 2 &#x2014; Post-Intune"/>
+                    <RadioButton x:Name="NavSoftware" Style="{StaticResource NavButton}" Content="Software Installation"/>
+                    <RadioButton x:Name="NavHardware" Style="{StaticResource NavButton}" Content="Hardware Diagnostics"/>
+                    <RadioButton x:Name="NavSecurity" Style="{StaticResource NavButton}" Content="Security Verification"/>
+                    <RadioButton x:Name="NavReports" Style="{StaticResource NavButton}" Content="Reports"/>
+                    <RadioButton x:Name="NavSettings" Style="{StaticResource NavButton}" Content="Settings"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Column="1" Margin="26,22,12,16">
+
+            <!-- Dashboard -->
+            <ScrollViewer x:Name="PageDashboard" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,14,0">
+                    <TextBlock Text="Dashboard" Style="{StaticResource PageTitle}"/>
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="Final readiness status" Style="{StaticResource CardLabel}"/>
+                            <TextBlock x:Name="ReadinessText" Style="{StaticResource CardValue}" FontSize="20" Text="Not evaluated"/>
+                            <TextBlock Text="Onboarding progress" Style="{StaticResource CardLabel}" Margin="0,12,0,4"/>
+                            <ProgressBar x:Name="DashboardProgress" Height="14" Minimum="0" Maximum="100" Foreground="{StaticResource AccentBrush}"/>
+                            <TextBlock x:Name="DashboardProgressText" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <UniformGrid Columns="3">
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Device name" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardDeviceName" Style="{StaticResource CardValue}" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Manufacturer" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardManufacturer" Style="{StaticResource CardValue}" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Model" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardModel" Style="{StaticResource CardValue}" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Serial number" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardSerial" Style="{StaticResource CardValue}" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Windows version" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardWindows" Style="{StaticResource CardValue}" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Current signed-in user" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardUser" Style="{StaticResource CardValue}" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Intune enrollment indicators" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardIntune" Style="{StaticResource CardValue}" FontSize="13" Text="Not evaluated - verified in Part 2"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="TPM / Secure Boot" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardSecurity" Style="{StaticResource CardValue}" FontSize="13" Text="-"/></StackPanel></Border>
+                        <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Hardware" Style="{StaticResource CardLabel}"/><TextBlock x:Name="CardHardware" Style="{StaticResource CardValue}" FontSize="13" Text="-"/></StackPanel></Border>
+                    </UniformGrid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Part 1 -->
+            <Grid x:Name="PagePart1" Visibility="Collapsed" Margin="0,0,14,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Text="Part 1 &#x2014; Pre-Intune Preparation" Style="{StaticResource PageTitle}"/>
+
+                <Border x:Name="Part1Banner" Grid.Row="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,12" Background="#1E9E57" Visibility="Collapsed">
+                    <TextBlock x:Name="Part1BannerText" Foreground="White" FontSize="16" FontWeight="Bold" TextWrapping="Wrap"/>
+                </Border>
+
+                <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,0,0,12">
+                    <StackPanel>
+                        <StackPanel x:Name="Part1Steps"/>
+                        <ProgressBar x:Name="Part1Progress" Height="12" Minimum="0" Maximum="100" Margin="0,10,0,0" Foreground="{StaticResource AccentBrush}"/>
+                        <TextBlock x:Name="Part1ProgressText" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
+
+                <DockPanel Grid.Row="3" Margin="0,0,0,10" LastChildFill="False">
+                    <Button x:Name="Part1StartButton" DockPanel.Dock="Left" Style="{StaticResource PrimaryButton}" Content="Start Part 1"/>
+                    <TextBlock DockPanel.Dock="Left" Text="IT Technician:" VerticalAlignment="Center" Margin="18,0,6,0" Foreground="{StaticResource MutedBrush}"/>
+                    <TextBox x:Name="TechnicianBox" DockPanel.Dock="Left" Width="200" Padding="5,4" VerticalAlignment="Center" MaxLength="80"/>
+                    <Button x:Name="Part1NewSessionButton" DockPanel.Dock="Right" Content="Start New Session..." Padding="12,7"/>
+                    <Button x:Name="Part1OpenReportButton" DockPanel.Dock="Right" Content="Open Report" Padding="12,7" Margin="0,0,8,0" IsEnabled="False"/>
+                </DockPanel>
+
+                <Border Grid.Row="4" Background="#0E1B2B" CornerRadius="8" Padding="6">
+                    <ListBox x:Name="Part1Log" Background="Transparent" BorderThickness="0" FontFamily="Consolas" FontSize="12"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                </Border>
+            </Grid>
+
+            <!-- Placeholder pages (implemented in later phases) -->
+            <StackPanel x:Name="PagePart2" Visibility="Collapsed">
+                <TextBlock Text="Part 2 &#x2014; Post-Intune Employee Setup" Style="{StaticResource PageTitle}"/>
+                <Border Style="{StaticResource Card}"><TextBlock TextWrapping="Wrap" Text="Not available in this build. Part 2 (Intune/Entra verification, application installation, employee profile configuration) is delivered in Phases 3-6. Run it only after the device has been provisioned and the employee has signed in."/></Border>
+            </StackPanel>
+            <StackPanel x:Name="PageSoftware" Visibility="Collapsed">
+                <TextBlock Text="Software Installation" Style="{StaticResource PageTitle}"/>
+                <Border Style="{StaticResource Card}"><TextBlock TextWrapping="Wrap" Text="Not available in this build. Planned for Phase 3."/></Border>
+            </StackPanel>
+            <StackPanel x:Name="PageHardware" Visibility="Collapsed">
+                <TextBlock Text="Hardware Diagnostics" Style="{StaticResource PageTitle}"/>
+                <Border Style="{StaticResource Card}"><TextBlock TextWrapping="Wrap" Text="Not available in this build. Planned for Phase 4. Basic device inventory is shown on the Dashboard after Part 1 runs."/></Border>
+            </StackPanel>
+            <StackPanel x:Name="PageSecurity" Visibility="Collapsed">
+                <TextBlock Text="Security Verification" Style="{StaticResource PageTitle}"/>
+                <Border Style="{StaticResource Card}"><TextBlock TextWrapping="Wrap" Text="Not available in this build. Planned for Phase 4."/></Border>
+            </StackPanel>
+            <StackPanel x:Name="PageReports" Visibility="Collapsed">
+                <TextBlock Text="Reports" Style="{StaticResource PageTitle}"/>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock x:Name="ReportsPathText" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <Button x:Name="OpenReportsFolderButton" Content="Open Reports Folder" Padding="12,7" Margin="0,0,8,0"/>
+                            <Button x:Name="OpenLogsFolderButton" Content="Open Logs Folder" Padding="12,7"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            <StackPanel x:Name="PageSettings" Visibility="Collapsed">
+                <TextBlock Text="Settings" Style="{StaticResource PageTitle}"/>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" Text="Settings are read from Config\Settings.json on the USB drive at start-up. Edit that file to change them (never store passwords or keys in it). Effective values for this session:"/>
+                        <TextBox x:Name="SettingsText" IsReadOnly="True" FontFamily="Consolas" FontSize="12" Margin="0,10,0,0" BorderThickness="0"
+                                 Background="#F3F6FA" Padding="10" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" MaxHeight="460"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

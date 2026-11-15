@@ -1,0 +1,28 @@
+GRE IT Onboarding
+=================
+
+INTERNAL USE ONLY - PROPRIETARY
+
+This repository contains internal IT tooling. It is not licensed for
+redistribution outside the organization. Keep the GitHub repository private.
+
+Third-party components
+----------------------
+No third-party source code or binaries are bundled with this repository.
+
+At run time the tool calls components that are already part of Windows 11 or
+are supplied separately by the organization:
+
+  * Windows PowerShell 5.1, WPF (.NET Framework)       - Microsoft, part of Windows
+  * Windows Update Agent COM API                       - Microsoft, part of Windows
+  * MDM bridge WMI provider (MDM_DevDetail_Ext01)      - Microsoft, part of Windows
+  * Windows Package Manager (WinGet)                   - Microsoft (used from Part 2)
+  * Office Deployment Tool, Sophos installer           - supplied by the organization,
+                                                         NOT stored in Git
+
+Development/test dependency (not shipped on the USB):
+
+  * Pester 5.x (MIT License) - https://github.com/pester/Pester
+
+Company assets (wallpaper, installers, signatures) remain the property of the
+organization and must be added to the USB by the IT department.
