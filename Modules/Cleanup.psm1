@@ -154,7 +154,21 @@ function Invoke-OnboardingPart1Cleanup {
         $out.Message = 'Cleanup skipped: the Part 1 report could not be verified on the USB drive.'
         return $out
     }
-    $protected = @($AppRoot, $env:SystemRoot, $env:ProgramFiles, ${env:ProgramFiles(x86)}, (Join-Path $env:SystemDrive 'Users')) | Where-Object { $_ }
+    $candidates = @($AppRoot, $env:SystemRoot, $env:ProgramFiles, ${env:ProgramFiles(x86)}, (Join-Path $env:SystemDrive 'Users')) | Where-Object { $_ }
+    # A protected location that CONTAINS the application's own working folder cannot be
+    # blocked wholesale, or nothing could ever be cleaned (e.g. a working root redirected
+    # below a user profile). The "strictly inside the working folder" rule still applies.
+    $sep = [System.IO.Path]::DirectorySeparatorChar
+    $workRoots = @(Get-OnboardingCleanupAllowedRoots | ForEach-Object { ConvertTo-CleanupNormalizedPath $_ })
+    $protected = @()
+    foreach ($candidate in $candidates) {
+        $normalized = ConvertTo-CleanupNormalizedPath $candidate
+        $containsWorkRoot = $false
+        foreach ($w in $workRoots) {
+            if ($w.StartsWith($normalized + $sep, [System.StringComparison]::OrdinalIgnoreCase)) { $containsWorkRoot = $true }
+        }
+        if (-not $containsWorkRoot) { $protected += $candidate }
+    }
     $r = Remove-OnboardingTrackedItems -ProtectedRoots $protected
     $out.Removed = $r.Removed; $out.Refused = $r.Refused; $out.Errors = $r.Errors
     $out.Success = (@($r.Errors).Count -eq 0)
