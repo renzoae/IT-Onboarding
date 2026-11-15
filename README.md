@@ -9,10 +9,10 @@ independent parts:
 | **Part 1 - Pre-Intune** | New laptop, before Autopilot/Intune | **Implemented** (Phases 1-2) |
 | **Part 2 - Post-Intune** | After provisioning, employee signed in | Not implemented yet (Phases 3-7) |
 
-> **Pilot status:** the code in this repository has **not yet been executed on a
-> Windows device**. The automated tests are written but have not been run (see
-> [Documentation/Testing.md](Documentation/Testing.md)). Run the test suite and
-> the pilot checklist on a non-production laptop before any real use.
+> **Pilot status:** the scripts parse cleanly and the mocked test suite passes
+> (105 of 105), but Part 1 has **not yet been run end to end on a device**. Work
+> through the pilot checklist in [Documentation/Testing.md](Documentation/Testing.md)
+> on a non-production laptop before any real use.
 
 ## What Part 1 does
 

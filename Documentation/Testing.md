@@ -4,14 +4,15 @@
 
 | Test type | Status |
 |-----------|--------|
-| Pester unit tests (mocked) | **Written, not yet executed.** The development environment had no PowerShell. |
-| Script parse/syntax check on Windows PowerShell 5.1 | **Not done** |
+| Pester unit tests (mocked) | **Passed: 105 of 105** on Windows PowerShell 5.1 with Pester 6.2.0 |
+| Script parse/syntax check on Windows PowerShell 5.1 | **Passed** (no errors in any `.ps1` / `.psm1`) |
 | GUI on a real Windows 11 device | **Not done** |
 | Account creation, Windows Update, hardware hash on real hardware | **Not done** |
 | Intune / Autopilot import of the generated CSV | **Not done** |
 
-Nothing in this repository should be described as "tested" until the steps
-below have been carried out.
+The decision logic is covered by the automated tests. Everything that touches a
+real device (the window, accounts, Windows Update, the hardware hash) is still
+untested until the pilot checklist below has been carried out.
 
 ## 1. Automated tests (development PC, no admin rights needed)
 
@@ -39,7 +40,7 @@ Application-detection tests arrive with Phase 3.
 ## 2. Syntax check on Windows
 
 ```powershell
-Get-ChildItem -Recurse -Include *.ps1,*.psm1 | ForEach-Object {
+Get-ChildItem -Recurse -File | Where-Object { $_.Extension -in '.ps1', '.psm1' } | ForEach-Object {
     $errors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors)
     if ($errors) { "$($_.Name): $($errors[0].Message)" }
