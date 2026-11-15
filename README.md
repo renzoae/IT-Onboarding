@@ -1,83 +1,46 @@
 # GRE IT Onboarding
 
-Portable Windows 11 laptop onboarding tool for the IT department. It runs from a
-USB drive, needs no installation, and automates the onboarding workflow in two
-independent parts:
+Prepares a new Windows 11 laptop before Intune. Two files do everything:
 
-| Part | When | Status in this build |
-|------|------|----------------------|
-| **Part 1 - Pre-Intune** | New laptop, before Autopilot/Intune | **Implemented** (Phases 1-2) |
-| **Part 2 - Post-Intune** | After provisioning, employee signed in | Not implemented yet (Phases 3-7) |
+| File | Purpose |
+|------|---------|
+| `Start-Part1.cmd` | Double-click this to start |
+| `Part1.ps1` | The script (settings are at the top) |
 
-> **Pilot status:** the scripts parse cleanly and the mocked test suite passes
-> (105 of 105), but Part 1 has **not yet been run end to end on a device**. Work
-> through the pilot checklist in [Documentation/Testing.md](Documentation/Testing.md)
-> on a non-production laptop before any real use.
+## What it does, in order
 
-## What Part 1 does
+1. **Local administrator** - a dialog asks for username, password and confirm
+   password, creates the account, adds it to Administrators and verifies it.
+   An existing account is only changed if you click Yes.
+2. **Device information** - manufacturer, model, serial, BIOS, Windows, CPU,
+   RAM, storage, battery, TPM, Secure Boot, network adapters.
+3. **Autopilot hardware hash** - saved to `Reports\HardwareHash\Autopilot_<serial>.csv`.
+4. **Windows Update** (last) - installs updates. If a restart is needed,
+   restart and run `Start-Part1.cmd` again; finished steps are skipped.
 
-1. **Local administrator** - secure dialog (username, password, confirm). The
-   account is created, added to the local Administrators group and verified.
-   Existing accounts are never changed without explicit confirmation.
-2. **Device information** - manufacturer, model, serial, BIOS, Windows edition /
-   version / build, CPU, RAM, storage, battery, TPM, Secure Boot, network adapters.
-3. **Windows Update** - connectivity check, scan, download, install, restart
-   detection, automatic resume after restart, rescan, final build recorded.
-4. **Autopilot hardware hash** - exported to `Reports/HardwareHash/Autopilot_<serial>.csv`
-   and validated.
-5. **Report** - `Reports/Part1/Part1_<serial>_<timestamp>.html` and `.json`.
-6. **Cleanup** - removes only the tool's own tracked temporary files.
+A report is saved to `Reports\Part1_<serial>.html` and a log next to it.
+When everything is done it shows **PART 1 COMPLETED - READY FOR INTUNE**.
+It does not enroll the device and does not run Sysprep.
 
-Part 1 then stops with **PART 1 COMPLETED - READY FOR INTUNE**. It does **not**
-enroll the device and does **not** run Sysprep. The Intune administrator imports
-the CSV into Windows Autopilot manually.
+## How to use
 
-## Quick start
+1. Copy this folder to a USB drive (or any folder on the laptop).
+2. Connect the laptop to power and a network.
+3. Double-click `Start-Part1.cmd` and approve the administrator prompt.
+4. Give `Reports\HardwareHash\Autopilot_<serial>.csv` to the Intune administrator.
 
-1. Copy the whole repository folder to a USB drive (see
-   [Documentation/Deployment.md](Documentation/Deployment.md)).
-2. Review `Config/Settings.json`.
-3. On the new laptop, double-click **`Start-Part1.cmd`** and approve the UAC prompt.
-4. Click **Start Part 1**.
+## Settings
 
-## Repository layout
+Edit the three lines at the top of `Part1.ps1`:
 
-```
-Start-Part1.cmd / Start-Part2.cmd   Launchers (double-click)
-Scripts/    Launcher.ps1 (elevation), Part1.ps1 (workflow), Part2.ps1 (placeholder)
-GUI/        MainWindow.xaml/.ps1, Components/LocalAdminDialog.xaml/.ps1
-Modules/    Business logic, one module per concern (see Documentation/Architecture.md)
-Config/     Settings.json, Applications.json (templates - no secrets)
-Assets/     CompanyWallpaper.jpg (company-supplied, Part 2)
-Installers/ Company-supplied installers (never committed)
-Reports/    Generated output (never committed)
-Logs/       Generated logs (never committed)
-Tests/      Pester 5 tests (mocked)
-Documentation/
-```
+- `$MinPasswordLength` - minimum password length (default 12)
+- `$IncludeDriverUpdates` - also install driver updates (default no)
+- `$AutopilotGroupTag` - optional Autopilot Group Tag
 
-## Company-specific prerequisites (not invented by this tool)
+## Notes
 
-| Item | Where | Needed for |
-|------|-------|-----------|
-| Password policy (minimum length, forbidden terms, expiry) | `Config/Settings.json` -> `LocalAdmin` | Part 1 |
-| Windows Update choices (drivers, feature upgrades, EULA acceptance) | `Config/Settings.json` -> `WindowsUpdate` | Part 1 |
-| Autopilot Group Tag (optional) | `Config/Settings.json` -> `Autopilot.GroupTag` | Part 1 |
-| Organization name / default technician | `Config/Settings.json` -> `Reporting` | Reports |
-| Corporate wallpaper | `Assets/CompanyWallpaper.jpg` | Part 2 |
-| Sophos installer, Office Deployment Tool configuration | `Installers/` | Part 2 |
-| Verified WinGet package IDs | `Config/Applications.json` | Part 2 |
-
-## Documentation
-
-* [Architecture](Documentation/Architecture.md)
-* [USB deployment](Documentation/Deployment.md)
-* [Testing](Documentation/Testing.md)
-* [Troubleshooting and exit codes](Documentation/Troubleshooting.md)
-* [Security considerations](Documentation/Security.md)
-
-## What must never be committed
-
-Credentials, employee data, real hardware hash exports, BitLocker recovery keys,
-generated reports/logs, and licensed installers. `.gitignore` excludes the
-folders where these are produced; keep the GitHub repository **private**.
+- The password is never written to a file, log or the USB drive.
+- Feature upgrades are skipped; update license terms are accepted automatically.
+- The hardware hash usually cannot be read inside a virtual machine.
+- Test on a spare laptop first. This single-script version has not yet been
+  run on a real device.
