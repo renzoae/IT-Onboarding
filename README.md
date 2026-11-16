@@ -1,13 +1,15 @@
 # GRE IT Onboarding
 
-Prepares a new Windows 11 laptop before Intune. Two files do everything:
+Prepares a new Windows 11 laptop in two parts. Each part is one script.
 
 | File | Purpose |
 |------|---------|
-| `Start-Part1.cmd` | Double-click this to start |
-| `Part1.ps1` | The script (settings are at the top) |
+| `Start-Part1.cmd` + `Part1.ps1` | Before Intune (new laptop) |
+| `Start-Part2.cmd` + `Part2.ps1` | After Intune (employee signed in) |
 
-## What it does, in order
+Settings are the few lines at the top of each `.ps1` file.
+
+## Part 1 - before Intune
 
 1. **Local administrator** - a dialog asks for username, password and confirm
    password, creates the account, adds it to Administrators and verifies it.
@@ -18,29 +20,45 @@ Prepares a new Windows 11 laptop before Intune. Two files do everything:
 4. **Windows Update** (last) - installs updates. If a restart is needed,
    restart and run `Start-Part1.cmd` again; finished steps are skipped.
 
-A report is saved to `Reports\Part1_<serial>.html` and a log next to it.
-When everything is done it shows **PART 1 COMPLETED - READY FOR INTUNE**.
-It does not enroll the device and does not run Sysprep.
+Ends with **PART 1 COMPLETED - READY FOR INTUNE** and a report in
+`Reports\Part1_<serial>.html`. It does not enroll the device or run Sysprep.
 
-## How to use
+How to run: connect power and a network, double-click `Start-Part1.cmd`,
+approve the administrator prompt. Then give the CSV in `Reports\HardwareHash`
+to the Intune administrator.
 
-1. Copy this folder to a USB drive (or any folder on the laptop).
-2. Connect the laptop to power and a network.
-3. Double-click `Start-Part1.cmd` and approve the administrator prompt.
-4. Give `Reports\HardwareHash\Autopilot_<serial>.csv` to the Intune administrator.
+## In between (done by the Intune administrator, not by this tool)
 
-## Settings
+Import the CSV into Windows Autopilot, assign the profile, provision or reset
+the laptop, and let the employee sign in with the company account.
 
-Edit the three lines at the top of `Part1.ps1`:
+## Part 2 - after Intune
 
-- `$MinPasswordLength` - minimum password length (default 12)
-- `$IncludeDriverUpdates` - also install driver updates (default no)
-- `$AutopilotGroupTag` - optional Autopilot Group Tag
+Run it while the **employee** is signed in. Double-click `Start-Part2.cmd`
+normally (not "Run as administrator"); it asks for administrator rights itself
+halfway through.
+
+- **As the employee:** checks Entra ID join and company sign-in, applies the
+  company wallpaper to the employee's profile, checks OneDrive sign-in and
+  Desktop/Documents backup.
+- **As administrator:** installs Adobe Acrobat Reader, 7-Zip and Google Earth
+  Pro with WinGet if missing; verifies Microsoft 365 Apps, Teams and Sophos
+  (these come from Intune or the company installer); checks Intune enrollment,
+  BitLocker, recovery key backup, TPM, Secure Boot, firewall and antivirus.
+
+Result in `Reports\Part2_<serial>.html`:
+
+- **READY** - every check passed
+- **NOT READY** - at least one check failed
+- **MANUAL REVIEW REQUIRED** - nothing failed, but something could not be confirmed
+
+Before running Part 2, put the company wallpaper at `Assets\CompanyWallpaper.jpg`.
 
 ## Notes
 
-- The password is never written to a file, log or the USB drive.
+- Passwords and BitLocker recovery keys are never written to any file.
+- Part 2 changes no security setting and no Intune policy. It cannot decide
+  Intune compliance; confirm that in the Intune portal.
 - Feature upgrades are skipped; update license terms are accepted automatically.
 - The hardware hash usually cannot be read inside a virtual machine.
-- Test on a spare laptop first. This single-script version has not yet been
-  run on a real device.
+- Neither script has been run on a real device yet. Test on a spare laptop first.
