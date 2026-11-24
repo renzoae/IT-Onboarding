@@ -16,7 +16,6 @@ param()
 $ErrorActionPreference = 'Stop'
 
 # ============================ SETTINGS ============================
-$MinPasswordLength    = 12      # company password policy: minimum length
 $IncludeDriverUpdates = $false  # $true = also install driver updates
 $AutopilotGroupTag    = ''      # optional Autopilot Group Tag, '' = none
 # ==================================================================
@@ -35,8 +34,6 @@ if (-not $me.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     }
 }
 
-Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
-
 $Root      = $PSScriptRoot
 $Reports   = Join-Path $Root 'Reports'
 $HashDir   = Join-Path $Reports 'HardwareHash'
@@ -45,7 +42,6 @@ $StateFile = Join-Path $StateDir 'Part1.json'       # remembers only the admin U
 $LogFile   = Join-Path $Reports ('Part1_{0}.log' -f $env:COMPUTERNAME)
 $Title     = 'GRE IT Onboarding'
 $AdminSid  = 'S-1-5-32-544'                         # local Administrators group (any language)
-New-Item -ItemType Directory -Path $Reports, $HashDir, $StateDir -Force | Out-Null
 
 function Write-Log {
     param([string]$Text, [string]$Level = 'INFO')
@@ -84,7 +80,8 @@ function Get-SecureChars {
 }
 
 function Get-PasswordProblems {
-    # Checks the password policy without ever turning the password into text.
+    # Only checks that a password was typed and both boxes match (no other rules),
+    # without ever turning the password into text.
     param([securestring]$Password, [securestring]$Confirm, [string]$UserName)
     $a = Get-SecureChars $Password
     $b = Get-SecureChars $Confirm
@@ -94,23 +91,7 @@ function Get-PasswordProblems {
         if ($same) { for ($i = 0; $i -lt $a.Length; $i++) { if ($a[$i] -ne $b[$i]) { $same = $false; break } } }
         if (-not $same) { return @('Password and Confirm Password do not match.') }
 
-        $p = @()
-        if ($a.Length -lt $MinPasswordLength) { $p += "Password must be at least $MinPasswordLength characters." }
-        if ($a.Length -gt 127) { $p += 'Password must be 127 characters or fewer.' }
-        $upper = 0; $lower = 0; $digit = 0; $other = 0
-        foreach ($c in $a) {
-            if ([char]::IsUpper($c)) { $upper = 1 } elseif ([char]::IsLower($c)) { $lower = 1 } elseif ([char]::IsDigit($c)) { $digit = 1 } else { $other = 1 }
-        }
-        if (($upper + $lower + $digit + $other) -lt 3) { $p += 'Password needs three of: uppercase, lowercase, digits, symbols.' }
-        if ($UserName.Length -ge 3) {
-            $n = $UserName.ToLowerInvariant().ToCharArray()
-            for ($i = 0; $i -le $a.Length - $n.Length; $i++) {
-                $hit = $true
-                for ($j = 0; $j -lt $n.Length; $j++) { if ([char]::ToLowerInvariant($a[$i + $j]) -ne $n[$j]) { $hit = $false; break } }
-                if ($hit) { $p += 'Password must not contain the username.'; break }
-            }
-        }
-        return $p
+        return @()
     }
     finally {
         [Array]::Clear($a, 0, $a.Length)
@@ -162,7 +143,7 @@ function Show-AdminDialog {
 '@
     $win = [Windows.Markup.XamlReader]::Parse($xaml)
     $userBox = $win.FindName('UserBox'); $pw1 = $win.FindName('Pw1'); $pw2 = $win.FindName('Pw2'); $err = $win.FindName('Err')
-    $win.FindName('Hint').Text = "At least $MinPasswordLength characters, with three of: uppercase, lowercase, digits, symbols. The password is not saved anywhere."
+    $win.FindName('Hint').Text = 'Any password is accepted. It is not saved anywhere.'
     $userBox.Text = $UserName
     $err.Text = $ErrorText
     $result = @{ UserName = $null; Password = $null }
@@ -412,6 +393,8 @@ function Get-Overall {
 # =================================================================
 $exitCode = 1
 try {
+    Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
+    New-Item -ItemType Directory -Path $Reports, $HashDir, $StateDir -Force | Out-Null
     Write-Log '=== GRE IT Onboarding - Part 1 ===' 'STEP'
     $results = [ordered]@{
         '1. Local administrator'     = @{ Status = 'NOT DONE'; Message = '' }
@@ -473,8 +456,9 @@ try {
     }
 }
 catch {
-    Write-Log "Unexpected error: $($_.Exception.Message)" 'ERROR'
-    Write-Log $_.ScriptStackTrace 'ERROR'
+    Write-Host "Unexpected error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host $_.ScriptStackTrace -ForegroundColor Red
+    try { Write-Log "Unexpected error: $($_.Exception.Message)" 'ERROR' } catch { }
 }
 Read-Host "`nPress Enter to close"
 exit $exitCode

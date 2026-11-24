@@ -13,6 +13,7 @@ Settings are the few lines at the top of each `.ps1` file.
 
 1. **Local administrator** - a dialog asks for username, password and confirm
    password, creates the account, adds it to Administrators and verifies it.
+   Any password is accepted; the two password boxes only have to match.
    An existing account is only changed if you click Yes.
 2. **Device information** - manufacturer, model, serial, BIOS, Windows, CPU,
    RAM, storage, battery, TPM, Secure Boot, network adapters.
