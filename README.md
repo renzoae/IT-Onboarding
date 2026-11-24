@@ -43,8 +43,10 @@ halfway through.
   company wallpaper to the employee's profile, checks OneDrive sign-in and
   Desktop/Documents backup.
 - **As administrator:** installs Adobe Acrobat Reader, 7-Zip and Google Earth
-  Pro with WinGet if missing; verifies Microsoft 365 Apps, Teams and Sophos
-  (these come from Intune or the company installer); checks Intune enrollment,
+  Pro with WinGet if missing; installs Microsoft 365 Apps from Microsoft if
+  missing (edition set by `$Microsoft365Edition` at the top of `Part2.ps1`,
+  default Business); verifies Teams and Sophos (these come from Intune or the
+  company installer); checks Intune enrollment,
   BitLocker, recovery key backup, TPM, Secure Boot, firewall and antivirus.
 
 Result in `Reports\Part2_<serial>.html`:

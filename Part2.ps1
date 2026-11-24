@@ -22,8 +22,13 @@ $WinGetApps = @(
     @{ Name = '7-Zip';                Match = '7-Zip*';            Id = '7zip.7zip' }
     @{ Name = 'Google Earth Pro';     Match = 'Google Earth Pro*'; Id = 'Google.EarthPro' }
 )
-# Microsoft 365, Teams, OneDrive and Sophos are only VERIFIED here; they are
-# expected to be installed by Intune or the company installer.
+# Microsoft 365 Apps: installed from Microsoft when missing. Must match the licence:
+#   'Business'   = Microsoft 365 Business Standard / Premium
+#   'Enterprise' = Microsoft 365 E3 / E5
+#   ''           = do not install, only check
+$Microsoft365Edition = 'Business'
+# Teams, OneDrive and Sophos are only VERIFIED here; they are expected to be
+# installed by Intune or the company installer.
 $WallpaperFile = 'Assets\CompanyWallpaper.jpg'   # relative to this folder
 # ==================================================================
 
@@ -127,6 +132,46 @@ function Get-WinGetPath {
     return $null
 }
 
+function Install-Microsoft365 {
+    # Uses Microsoft's own Office Deployment Tool, downloaded from Microsoft and
+    # checked for a valid Microsoft signature before it is run. Returns nothing;
+    # the caller verifies the result. Typically takes 10-30 minutes.
+    $product = 'O365BusinessRetail'
+    if ($Microsoft365Edition -eq 'Enterprise') { $product = 'O365ProPlusRetail' }
+    $work = Join-Path $env:TEMP 'GRE-Office-Setup'
+    New-Item -ItemType Directory -Path $work -Force | Out-Null
+    try {
+        $setup = Join-Path $work 'setup.exe'
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+        Write-Line '  Downloading the Office Deployment Tool from Microsoft...'
+        Invoke-WebRequest -Uri 'https://officecdn.microsoft.com/pr/wsus/setup.exe' -OutFile $setup -UseBasicParsing
+        $sig = Get-AuthenticodeSignature -LiteralPath $setup
+        if ($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notlike '*O=Microsoft Corporation*') {
+            throw 'The downloaded Office setup file is not signed by Microsoft. It was not run.'
+        }
+        $config = Join-Path $work 'configuration.xml'
+        $xml = @(
+            '<Configuration>',
+            '  <Add OfficeClientEdition="64" Channel="Current">',
+            ('    <Product ID="{0}">' -f $product),
+            '      <Language ID="MatchOS" />',
+            '      <ExcludeApp ID="Groove" />',
+            '      <ExcludeApp ID="Lync" />',
+            '    </Product>',
+            '  </Add>',
+            '  <Display Level="None" AcceptEULA="TRUE" />',
+            '  <Updates Enabled="TRUE" />',
+            '</Configuration>')
+        [IO.File]::WriteAllLines($config, [string[]]$xml)
+        Write-Line "  Installing Microsoft 365 Apps ($Microsoft365Edition). This takes 10-30 minutes - do not close this window..."
+        $run = Start-Process -FilePath $setup -ArgumentList ('/configure "{0}"' -f $config) -Wait -PassThru
+        if ($run.ExitCode -ne 0) { throw "Office setup ended with exit code $($run.ExitCode)." }
+    }
+    finally {
+        Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue   # only our own temp folder
+    }
+}
+
 function Invoke-ApplicationChecks {
     Write-Line "`nApplications" 'STEP'
     $winget = Get-WinGetPath
@@ -149,7 +194,14 @@ function Invoke-ApplicationChecks {
 
     $office = Get-InstalledApp 'Microsoft 365 Apps*'
     if ($office) { Add-Check 'Microsoft 365 Apps' 'OK' "Installed (version $($office.DisplayVersion))." }
-    else { Add-Check 'Microsoft 365 Apps' 'FAIL' 'Not installed. It is deployed by Intune - wait for it or check the assignment.' }
+    elseif (-not $Microsoft365Edition) { Add-Check 'Microsoft 365 Apps' 'FAIL' 'Not installed (installing is switched off in the settings).' }
+    else {
+        $problem = ''
+        try { Install-Microsoft365 } catch { $problem = $_.Exception.Message }
+        $office = Get-InstalledApp 'Microsoft 365 Apps*'     # verify, do not trust the exit code alone
+        if ($office) { Add-Check 'Microsoft 365 Apps' 'OK' "Installed ($Microsoft365Edition, version $($office.DisplayVersion)). The employee activates it by signing in." }
+        else { Add-Check 'Microsoft 365 Apps' 'FAIL' "Installation failed. $problem" }
+    }
 
     $teams = Get-AppxPackage -AllUsers -Name MSTeams -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($teams) { Add-Check 'Microsoft Teams' 'OK' "Installed (version $($teams.Version))." }
